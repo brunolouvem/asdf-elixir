@@ -140,13 +140,28 @@ EOS
 
 get_download_url_for_version() {
   local version=$1
+  local base_version
+  local filename
 
-  # if version is a release number, prepend v
-  if [[ "$version" =~ ^[0-9]+\.* ]]; then
-    version="v${version}"
+  # Remove 'v' prefix if present
+  version=${version#v}
+
+  # Check if version contains -otp-XX anywhere
+  if [[ "$version" =~ -otp-([0-9]+) ]]; then
+    # Extract OTP version
+    otp_version="${BASH_REMATCH[1]}"
+
+    # Extract base version (everything before -otp-XX)
+    base_version="${version%-otp-*}"
+
+    filename="elixir-otp-${otp_version}.zip"
+  else
+    # No OTP suffix, use the whole version
+    base_version="$version"
+    filename="elixir.zip"
   fi
 
-  echo "https://builds.hex.pm/builds/elixir/${version}.zip"
+  echo "https://github.com/elixir-lang/elixir/releases/download/v${base_version}/${filename}"
 }
 
 run_default_mix_commands() {
